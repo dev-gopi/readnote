@@ -63,18 +63,18 @@ export class ContentManager {
     bar.id = 'readnote-floating-toolbar';
     Object.assign(bar.style, {
       position: 'fixed',
-      top: `${Math.max(8, rect.top - 44)}px`,
+      top: `${Math.max(8, rect.top - 46)}px`,
       left: `${Math.min(window.innerWidth - 260, Math.max(8, rect.left))}px`,
       zIndex: '2147483647',
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
       padding: '6px 10px',
-      background: '#ffffff',
-      border: '1px solid #dee2e6',
-      borderRadius: '20px',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.16)',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      background: '#0f172a',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '999px',
+      boxShadow: '0 8px 24px rgba(15,23,42,0.28)',
+      fontFamily: '-apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif',
       fontSize: '12px',
     });
 
@@ -83,11 +83,11 @@ export class ContentManager {
       dot.type = 'button';
       dot.title = 'Highlight';
       Object.assign(dot.style, {
-        width: '16px',
-        height: '16px',
+        width: '15px',
+        height: '15px',
         borderRadius: '50%',
         backgroundColor: color,
-        border: '1px solid rgba(0,0,0,0.2)',
+        border: '1.5px solid rgba(255,255,255,0.35)',
         cursor: 'pointer',
         padding: '0',
       });
@@ -140,12 +140,12 @@ export class ContentManager {
     btn.textContent = label;
     Object.assign(btn.style, {
       border: 'none',
-      background: '#f0f3ff',
-      color: '#4361ee',
+      background: 'rgba(255,255,255,0.12)',
+      color: '#f8fafc',
       fontWeight: '600',
       fontSize: '11px',
-      padding: '3px 8px',
-      borderRadius: '10px',
+      padding: '3px 9px',
+      borderRadius: '999px',
       cursor: 'pointer',
     });
     btn.addEventListener('click', (ev) => {

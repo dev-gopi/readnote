@@ -10,8 +10,11 @@ export class Header {
     if (!this.root) return;
     this.root.innerHTML = `
       <header class="panel-header">
-        <img src="${chrome.runtime.getURL('assets/icons/icon32.png')}" alt="Logo" class="logo" />
-        <h1>ReadNote</h1>
+        <div class="panel-brand">
+          <img src="${chrome.runtime.getURL('assets/icons/icon32.png')}" alt="ReadNote" class="logo" />
+          <h1>ReadNote</h1>
+        </div>
+        <span class="version-pill">v1.0</span>
       </header>
     `;
   }

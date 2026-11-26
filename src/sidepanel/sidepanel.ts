@@ -656,7 +656,7 @@ export function initializeSidePanel(): void {
   const stopRecordingUI = (): void => {
     const recBtn = document.getElementById('btn-record-note') as HTMLButtonElement | null;
     const recBar = document.getElementById('recording-bar');
-    if (recBtn) recBtn.textContent = '🎤 Record';
+    if (recBtn) recBtn.textContent = 'Record';
     recBar?.classList.add('hidden');
     if (recordTimer !== null) {
       clearInterval(recordTimer);
@@ -710,7 +710,7 @@ export function initializeSidePanel(): void {
       };
 
       mediaRecorder.start();
-      if (recBtn) recBtn.textContent = '⏹️ Stop';
+      if (recBtn) recBtn.textContent = 'Stop';
       recBar?.classList.remove('hidden');
       recordSeconds = 0;
       if (timerEl) timerEl.textContent = 'Recording 00:00';
