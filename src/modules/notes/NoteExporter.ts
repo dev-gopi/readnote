@@ -47,7 +47,7 @@ export class NoteExporter {
     if (pages.length === 0) pages.push(['ReadNote - No notes to export.']);
 
     const pdfBytes = this._buildSimplePDF(pages);
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
     this._triggerDownload(blob, filename);
   }
 
