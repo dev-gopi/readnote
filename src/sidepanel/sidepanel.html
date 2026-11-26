@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'self'" />
+  <title>ReadNote – Side Panel</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <div class="sidepanel-container">
+    <!-- Header injected by Header component -->
+    <div id="header-root"></div>
+
+    <!-- Navigation injected by Navigation component -->
+    <div id="nav-root"></div>
+
+    <!-- Toast injected by Notification component -->
+    <div id="notification-root"></div>
+
+    <!-- Views -->
+    <main class="panel-content" id="panel-content">
+
+      <!-- Summary view -->
+      <section id="view-summary" class="view active" role="tabpanel" aria-label="AI Summary">
+        <div class="notes-header-row">
+          <h2>AI Summary</h2>
+          <div class="export-actions">
+            <button class="btn-mini" id="btn-copy-summary" type="button" title="Copy summary">Copy</button>
+            <button class="btn-mini" id="btn-save-summary-note" type="button" title="Save summary as note">Save Note</button>
+          </div>
+        </div>
+        <textarea
+          class="note-input summary-custom-input"
+          id="summary-custom-input"
+          placeholder="Optional: paste custom text to summarize (or leave blank to summarize selected text / full page)…"
+          rows="3"
+        ></textarea>
+        <div class="summary-output" id="summary-output">
+          <p class="placeholder">Select text, paste custom text above, or click <strong>Summarize</strong>.</p>
+        </div>
+        <button class="btn-primary" id="btn-summarize-now">Summarize</button>
+      </section>
+
+      <!-- Notes view -->
+      <section id="view-notes" class="view hidden" role="tabpanel" aria-label="My Notes">
+        <div class="notes-header-row">
+          <h2>My Notes</h2>
+          <div class="export-actions">
+            <button class="btn-mini" id="btn-export-pdf" type="button" title="Export notes as PDF">PDF</button>
+            <button class="btn-mini" id="btn-export-image" type="button" title="Export notes as PNG Image">Image</button>
+            <button class="btn-mini" id="btn-export-md" type="button" title="Export notes as Markdown">MD</button>
+          </div>
+        </div>
+        <input id="notes-search" class="search-input" type="search" placeholder="Search notes…" />
+        <div class="notes-list" id="notes-list"></div>
+        <textarea
+          class="note-input"
+          id="note-input"
+          placeholder="Write a note or record your voice…"
+          rows="4"
+        ></textarea>
+        <div class="recording-bar hidden" id="recording-bar">
+          <span class="rec-dot"></span>
+          <span id="recording-timer">Recording 00:00</span>
+        </div>
+        <div id="audio-preview-container" class="audio-preview hidden"></div>
+        <div class="notes-actions">
+          <button class="btn-secondary" id="btn-record-note" type="button">🎤 Record</button>
+          <button class="btn-primary" id="btn-save-note" type="button">Save Note</button>
+        </div>
+      </section>
+
+      <!-- Highlights view -->
+      <section id="view-highlights" class="view hidden" role="tabpanel" aria-label="Highlights">
+        <h2>Highlights</h2>
+        <input id="highlights-search" class="search-input" type="search" placeholder="Search highlights…" />
+        <div class="highlights-list" id="highlights-list">
+          <p class="placeholder">Select text on any page and choose <strong>Highlight Selection</strong>.</p>
+        </div>
+      </section>
+
+      <!-- Quiz view -->
+      <section id="view-quiz" class="view hidden" role="tabpanel" aria-label="Quiz">
+        <h2>Quiz</h2>
+        <div class="quiz-container" id="quiz-container">
+          <p class="placeholder">Generate a quiz based on the current page content.</p>
+        </div>
+        <button class="btn-primary" id="btn-generate-quiz">Generate Quiz</button>
+      </section>
+
+      <!-- Settings view -->
+      <section id="view-settings" class="view hidden" role="tabpanel" aria-label="Settings">
+        <h2>Reader Settings</h2>
+        <div class="settings-form">
+          <div class="setting-group">
+            <label for="setting-voice">Voice</label>
+            <select id="setting-voice" class="setting-select"></select>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-label-row">
+              <label for="setting-speed">Speed</label>
+              <span id="setting-speed-value" class="setting-value">1.0x</span>
+            </div>
+            <input id="setting-speed" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-label-row">
+              <label for="setting-pitch">Pitch</label>
+              <span id="setting-pitch-value" class="setting-value">1.0</span>
+            </div>
+            <input id="setting-pitch" type="range" min="0.5" max="2.0" step="0.1" value="1.0" />
+          </div>
+
+          <div class="setting-group setting-checkbox-row">
+            <label for="setting-translate-enable">Translate before speaking (Free)</label>
+            <input id="setting-translate-enable" type="checkbox" />
+          </div>
+
+          <div class="setting-group">
+            <label for="setting-target-lang">Translate To Language</label>
+            <select id="setting-target-lang" class="setting-select">
+              <option value="bn">Bengali (বাংলা)</option>
+              <option value="en">English</option>
+              <option value="hi">Hindi (हिन्दी)</option>
+              <option value="es">Spanish (Español)</option>
+              <option value="fr">French (Français)</option>
+              <option value="de">German (Deutsch)</option>
+              <option value="ar">Arabic (العربية)</option>
+              <option value="ja">Japanese (日本語)</option>
+              <option value="zh-CN">Chinese (中文)</option>
+            </select>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-secondary" id="btn-test-voice" type="button">Test Voice</button>
+            <button class="btn-primary" id="btn-save-settings" type="button">Save Settings</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="sidepanel.ts" type="module"></script>
+</body>
+</html>

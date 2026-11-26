@@ -1,0 +1,47 @@
+{
+  "extends": "plasmo/templates/tsconfig.base",
+  "exclude": ["node_modules", "build", ".plasmo"],
+  "include": [
+    ".plasmo/index.d.ts",
+    "*.ts",
+    "*.tsx",
+    "contents/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "paths": {
+      "~*": ["./src/*"],
+      "~shared/*": ["./src/shared/*"]
+    },
+    // ── Security / Correctness ───────────────────────────────────────────────
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+
+    // ── Additional Safety ────────────────────────────────────────────────────
+    "noUncheckedIndexedAccess": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    // ── Code Quality ─────────────────────────────────────────────────────────
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+
+    // ── Module / Resolution ──────────────────────────────────────────────────
+    "allowJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+  }
+}

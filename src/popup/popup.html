@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'self'" />
+    <title>ReadNote</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+    <div class="popup-container">
+        <header class="popup-header">
+            <img src="../../assets/icons/icon32.png" alt="ReadNote" class="logo" />
+            <h1 class="app-title">ReadNote</h1>
+        </header>
+
+        <main class="popup-main">
+            <div class="action-grid">
+                <button class="action-btn" id="btn-summary" title="Summarize the current page with AI">
+                    <span class="icon" aria-hidden="true">📝</span>
+                    <span>Summarize</span>
+                </button>
+                <button class="action-btn" id="btn-notes" title="Open my notes">
+                    <span class="icon" aria-hidden="true">🗒️</span>
+                    <span>Notes</span>
+                </button>
+                <button class="action-btn" id="btn-read" title="Read the page aloud">
+                    <span class="icon" aria-hidden="true">🔊</span>
+                    <span>Read Aloud</span>
+                </button>
+                <button class="action-btn" id="btn-quiz" title="Generate a quiz from this page">
+                    <span class="icon" aria-hidden="true">❓</span>
+                    <span>Quiz Me</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="popup-footer">
+            <button id="btn-stop-read" class="open-panel-btn" style="background:#e63946;margin-bottom:8px;">
+                ⏹️ Stop Reading
+            </button>
+            <button id="btn-open-panel" class="open-panel-btn">
+                Open Side Panel
+            </button>
+        </footer>
+    </div>
+
+    <script src="popup.ts" type="module"></script>
+</body>
+
+</html>
