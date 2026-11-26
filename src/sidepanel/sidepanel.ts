@@ -751,10 +751,8 @@ export function initializeSidePanel(): void {
           // Ignore if speech recognition cannot start
         }
       }
-    } catch {
     } catch (err: unknown) {
       stopRecordingUI();
-      notification.show('Microphone permission denied or unavailable.');
       const errName = err instanceof DOMException ? err.name : '';
       if (errName === 'NotAllowedError' || errName === 'PermissionDeniedError') {
         notification.show('Opening tab to grant microphone permission...');
