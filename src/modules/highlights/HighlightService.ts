@@ -18,7 +18,7 @@ export class HighlightService {
     id?: string
   ): Promise<Highlight> {
     const highlight: Highlight = {
-      id: id ?? `hl-${Date.now()}`,
+      id: id ?? `hl-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`,
       text,
       pageUrl,
       pageTitle,

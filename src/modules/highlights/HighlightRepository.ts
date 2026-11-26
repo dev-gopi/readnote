@@ -1,28 +1,30 @@
 import type { Highlight } from '../../shared/types';
 import { StorageKeys } from '../../shared/constants/StorageKeys';
+import { LocalStorage } from '../../storage/LocalStorage';
 
 // Persistence for highlights
 export class HighlightRepository {
   private readonly key = StorageKeys.HIGHLIGHTS;
+  private readonly storage = new LocalStorage();
 
   private async _getAll(): Promise<Highlight[]> {
-    return new Promise((resolve) => {
-      chrome.storage.local.get([this.key], (r) => {
-        resolve((r[this.key] as Highlight[] | undefined) ?? []);
-      });
-    });
+    return (await this.storage.get<Highlight[]>(this.key)) ?? [];
   }
 
-  private async _setAll(items: Highlight[]): Promise<void> {
-    return new Promise((resolve) => {
-      chrome.storage.local.set({ [this.key]: items }, resolve);
-    });
+  private async _updateAll(
+    updater: (items: Highlight[]) => Highlight[]
+  ): Promise<Highlight[]> {
+    return this.storage.update<Highlight[]>(this.key, (items) => updater([...(items ?? [])]));
   }
 
   async save(highlight: Highlight): Promise<Highlight> {
-    const all = await this._getAll();
-    all.push(highlight);
-    await this._setAll(all);
+    await this._updateAll((items) => {
+      // Content scripts may retry a save after the service worker wakes up.
+      const existingIndex = items.findIndex((item) => item.id === highlight.id);
+      if (existingIndex === -1) return [...items, highlight];
+      items[existingIndex] = highlight;
+      return items;
+    });
     return highlight;
   }
 
@@ -32,8 +34,7 @@ export class HighlightRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const all = await this._getAll();
-    await this._setAll(all.filter((h) => h.id !== id));
+    await this._updateAll((items) => items.filter((item) => item.id !== id));
   }
 
   async findAll(): Promise<Highlight[]> {

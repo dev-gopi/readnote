@@ -9,16 +9,27 @@ export class NoteManager {
     this.repo = new NoteRepository();
   }
 
-  async createNote(text: string, pageUrl: string, pageTitle: string): Promise<Note> {
+  async createNote(
+    text: string,
+    pageUrl: string,
+    pageTitle: string,
+    tags: string[] = [],
+    id?: string
+  ): Promise<Note> {
     const now = new Date().toISOString();
+    const cleanTags = Array.from(
+      new Set(tags.map((t) => t.trim().replace(/^#/, '').toLowerCase()).filter(Boolean))
+    ).slice(0, 12);
     const note: Note = {
-      id: `note-${Date.now()}`,
+      id:
+        id ||
+        `note-${crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`,
       text,
       pageUrl,
       pageTitle,
       createdAt: now,
       updatedAt: now,
-      tags: [],
+      tags: cleanTags,
     };
     await this.repo.save(note);
     return note;

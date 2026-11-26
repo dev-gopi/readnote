@@ -60,6 +60,26 @@ export function initializePopup(): void {
     }
     window.close();
   });
+
+  document.getElementById('btn-pause-read')?.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id !== undefined) {
+      chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_READ_ALOUD' }, () => {
+        void chrome.runtime.lastError;
+      });
+    }
+    window.close();
+  });
+
+  document.getElementById('btn-focus-mode')?.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id !== undefined) {
+      chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_FOCUS_MODE' }, () => {
+        void chrome.runtime.lastError;
+      });
+    }
+    window.close();
+  });
 }
 
 initializePopup();

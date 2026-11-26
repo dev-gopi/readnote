@@ -117,17 +117,19 @@ body {
 }
 
 .popup-footer {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
   padding-top: 2px;
 }
 
 .open-panel-btn {
-  flex: 1;
+  grid-column: 1 / -1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-height: 40px;
   padding: 9px 12px;
   background: #0f172a;
   color: #ffffff;
@@ -148,7 +150,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 9px 12px;
+  min-height: 36px;
+  padding: 8px 10px;
   background: #fff1f2;
   color: #e11d48;
   border: 1px solid #fecdd3;

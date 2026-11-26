@@ -1,18 +1,27 @@
 export type ViewId = 'summary' | 'notes' | 'highlights' | 'quiz' | 'settings';
 
+export type SummaryStyle = 'brief' | 'detailed' | 'bullets' | 'study';
+
 export type MessageType =
   | 'GET_PAGE_CONTENT'
   | 'SAVE_NOTE'
   | 'GET_NOTES'
   | 'DELETE_NOTE'
+  | 'UPDATE_NOTE'
   | 'SAVE_HIGHLIGHT'
   | 'GET_HIGHLIGHTS'
   | 'DELETE_HIGHLIGHT'
   | 'AI_SUMMARIZE'
   | 'GENERATE_QUIZ'
   | 'HIGHLIGHT_SELECTION'
+  | 'SCROLL_TO_HIGHLIGHT'
+  | 'TOGGLE_FOCUS_MODE'
+  | 'IMPORT_DATA'
   | 'START_READ_ALOUD'
   | 'STOP_READ_ALOUD'
+  | 'PAUSE_READ_ALOUD'
+  | 'RESUME_READ_ALOUD'
+  | 'TOGGLE_READ_ALOUD'
   | 'TRANSLATE_TEXT'
   | 'TRIGGER_SUMMARY'
   | 'ADD_NOTE';
@@ -23,6 +32,8 @@ export interface ExtractedPage {
   text: string;
   html: string;
   selectedText?: string;
+  wordCount?: number;
+  readingTimeMinutes?: number;
 }
 
 export interface ExtensionMessage<T = Record<string, unknown>> {

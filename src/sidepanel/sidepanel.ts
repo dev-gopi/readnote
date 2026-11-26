@@ -99,16 +99,26 @@ export function initializeSidePanel(): void {
     }
 
     const searchInput = document.getElementById('notes-search') as HTMLInputElement | null;
+    const pageOnlyToggle = document.getElementById('notes-page-only') as HTMLInputElement | null;
     const query = searchInput?.value.trim().toLowerCase() ?? '';
+    let activeUrl = '';
+    if (pageOnlyToggle?.checked) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      activeUrl = tab?.url ?? '';
+    }
+
     const allNotes = res.data ?? [];
-    const notes = query
-      ? allNotes.filter(
-          (n) =>
-            n.text.toLowerCase().includes(query) ||
-            n.pageTitle.toLowerCase().includes(query) ||
-            n.pageUrl.toLowerCase().includes(query)
-        )
-      : allNotes;
+    const notes = allNotes.filter((n) => {
+      if (activeUrl && n.pageUrl !== activeUrl) return false;
+      if (!query) return true;
+      const cleanQuery = query.replace(/^#/, '');
+      return (
+        n.text.toLowerCase().includes(query) ||
+        n.pageTitle.toLowerCase().includes(query) ||
+        n.pageUrl.toLowerCase().includes(query) ||
+        n.tags.some((tag) => tag.toLowerCase().includes(cleanQuery))
+      );
+    });
 
     if (notes.length === 0) {
       const empty = document.createElement('p');
@@ -127,6 +137,18 @@ export function initializeSidePanel(): void {
       const body = document.createElement('p');
       body.textContent = note.text;
 
+      if (note.tags.length > 0) {
+        const tags = document.createElement('div');
+        tags.className = 'note-tags';
+        note.tags.forEach((tag) => {
+          const chip = document.createElement('span');
+          chip.className = 'note-tag';
+          chip.textContent = `#${tag}`;
+          tags.appendChild(chip);
+        });
+        card.appendChild(tags);
+      }
+
       const meta = document.createElement('div');
       meta.className = 'card-meta';
 
@@ -144,7 +166,58 @@ export function initializeSidePanel(): void {
         await loadNotes();
       });
 
-      meta.append(source, delBtn);
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', () => {
+        const editor = document.createElement('textarea');
+        editor.className = 'note-input note-editor';
+        editor.value = note.text;
+        editor.rows = 4;
+        const tagInput = document.createElement('input');
+        tagInput.className = 'search-input note-tag-input';
+        tagInput.placeholder = 'Tags, separated by commas';
+        tagInput.value = note.tags.join(', ');
+        const actions = document.createElement('div');
+        actions.className = 'note-edit-actions';
+        const cancel = document.createElement('button');
+        cancel.className = 'btn-mini';
+        cancel.textContent = 'Cancel';
+        const save = document.createElement('button');
+        save.className = 'btn-mini';
+        save.textContent = 'Save';
+        actions.append(cancel, save);
+        card.replaceChildren(editor, tagInput, actions);
+        editor.focus();
+        cancel.addEventListener('click', () => void loadNotes());
+        save.addEventListener('click', async () => {
+          const text = editor.value.trim();
+          if (!text) {
+            notification.show('A note cannot be empty');
+            return;
+          }
+          save.disabled = true;
+          const tags = Array.from(
+            new Set(
+              tagInput.value
+                .split(',')
+                .map((tag) => tag.trim().replace(/^#/, '').toLowerCase())
+                .filter(Boolean)
+            )
+          ).slice(0, 12);
+          const result = await sendRuntimeMessage({
+            type: 'UPDATE_NOTE',
+            payload: { id: note.id, text, tags },
+          });
+          notification.show(result.success ? 'Note updated' : result.error ?? 'Could not update note');
+          await loadNotes();
+        });
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'card-actions';
+      actions.append(editBtn, delBtn);
+      meta.append(source, actions);
       card.append(body, meta);
       list.appendChild(card);
     });
@@ -163,16 +236,27 @@ export function initializeSidePanel(): void {
     }
 
     const searchInput = document.getElementById('highlights-search') as HTMLInputElement | null;
+    const colorSelect = document.getElementById('highlights-color-filter') as HTMLSelectElement | null;
+    const pageOnlyToggle = document.getElementById('highlights-page-only') as HTMLInputElement | null;
     const query = searchInput?.value.trim().toLowerCase() ?? '';
+    const colorFilter = colorSelect?.value ?? '';
+    let activeUrl = '';
+    if (pageOnlyToggle?.checked) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      activeUrl = tab?.url ?? '';
+    }
+
     const allHighlights = res.data ?? [];
-    const highlights = query
-      ? allHighlights.filter(
-          (h) =>
-            h.text.toLowerCase().includes(query) ||
-            h.pageTitle.toLowerCase().includes(query) ||
-            h.pageUrl.toLowerCase().includes(query)
-        )
-      : allHighlights;
+    const highlights = allHighlights.filter((h) => {
+      if (activeUrl && h.pageUrl !== activeUrl) return false;
+      if (colorFilter && h.color.toLowerCase() !== colorFilter.toLowerCase()) return false;
+      if (!query) return true;
+      return (
+        h.text.toLowerCase().includes(query) ||
+        h.pageTitle.toLowerCase().includes(query) ||
+        h.pageUrl.toLowerCase().includes(query)
+      );
+    });
 
     if (highlights.length === 0) {
       const empty = document.createElement('p');
@@ -199,6 +283,41 @@ export function initializeSidePanel(): void {
       source.className = 'card-source';
       source.textContent = hl.pageTitle || hl.pageUrl || 'Highlight';
 
+      const jumpBtn = document.createElement('button');
+      jumpBtn.className = 'btn-edit';
+      jumpBtn.textContent = 'Jump';
+      jumpBtn.addEventListener('click', async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab?.id === undefined) return;
+        chrome.tabs.sendMessage(
+          tab.id,
+          { type: 'SCROLL_TO_HIGHLIGHT', payload: { id: hl.id } },
+          (resp?: ExtensionResponse) => {
+            if (chrome.runtime.lastError || !resp?.success) {
+              notification.show('Open the source page to jump to this highlight');
+            }
+          }
+        );
+      });
+
+      const toNoteBtn = document.createElement('button');
+      toNoteBtn.className = 'btn-edit';
+      toNoteBtn.textContent = '+Note';
+      toNoteBtn.addEventListener('click', async () => {
+        toNoteBtn.disabled = true;
+        const noteRes = await sendRuntimeMessage({
+          type: 'SAVE_NOTE',
+          payload: {
+            text: hl.text,
+            pageUrl: hl.pageUrl,
+            pageTitle: hl.pageTitle,
+            tags: ['highlight'],
+          },
+        });
+        toNoteBtn.disabled = false;
+        notification.show(noteRes.success ? 'Saved highlight as note!' : 'Could not save note');
+      });
+
       const delBtn = document.createElement('button');
       delBtn.className = 'btn-delete';
       delBtn.textContent = 'Delete';
@@ -209,7 +328,11 @@ export function initializeSidePanel(): void {
         await loadHighlights();
       });
 
-      meta.append(source, delBtn);
+      const actions = document.createElement('div');
+      actions.className = 'card-actions';
+      actions.append(jumpBtn, toNoteBtn, delBtn);
+
+      meta.append(source, actions);
       card.append(body, meta);
       list.appendChild(card);
     });
@@ -366,9 +489,11 @@ export function initializeSidePanel(): void {
 
   const runSummarize = async (overrideText?: string): Promise<void> => {
     const btn = document.getElementById('btn-summarize-now') as HTMLButtonElement | null;
+    const styleSelect = document.getElementById('summary-style') as HTMLSelectElement | null;
     const customInput = document.getElementById('summary-custom-input') as HTMLTextAreaElement | null;
     const output = document.getElementById('summary-output');
     const customText = (overrideText ?? customInput?.value ?? '').trim();
+    const style = styleSelect?.value ?? 'bullets';
 
     if (overrideText && customInput) {
       customInput.value = overrideText;
@@ -392,6 +517,7 @@ export function initializeSidePanel(): void {
         payload: {
           ...(tab?.id !== undefined ? { tabId: tab.id } : {}),
           ...(customText ? { text: customText } : {}),
+          style,
         },
       });
 
@@ -435,6 +561,15 @@ export function initializeSidePanel(): void {
         return;
       }
 
+      const scoreBanner = document.getElementById('quiz-score-banner');
+      const totalQuestions = response.data.length;
+      let correctCount = 0;
+      let answeredCount = 0;
+      if (scoreBanner) {
+        scoreBanner.textContent = `Score: 0 / ${totalQuestions}`;
+        scoreBanner.classList.remove('hidden');
+      }
+
       container.innerHTML = '';
       response.data.forEach((q, idx) => {
         const card = document.createElement('div');
@@ -452,6 +587,13 @@ export function initializeSidePanel(): void {
           optBtn.className = 'quiz-option';
           optBtn.textContent = opt;
           optBtn.addEventListener('click', () => {
+            answeredCount += 1;
+            if (opt === q.answer) {
+              correctCount += 1;
+            }
+            if (scoreBanner) {
+              scoreBanner.textContent = `Score: ${correctCount} / ${totalQuestions} (${answeredCount} answered)`;
+            }
             optionsWrap.querySelectorAll<HTMLButtonElement>('.quiz-option').forEach((b) => {
               b.disabled = true;
               if (b.textContent === q.answer) {
@@ -542,11 +684,71 @@ export function initializeSidePanel(): void {
     notification.show(res.success ? 'Summary saved as note!' : 'Failed to save summary');
   });
 
-  // Search filters
+  // Translate & Listen to summary
+  document.getElementById('btn-translate-summary')?.addEventListener('click', async () => {
+    const output = document.getElementById('summary-output');
+    const text = output?.textContent?.trim() ?? '';
+    if (!text || output?.querySelector('.placeholder')) {
+      notification.show('Generate a summary first');
+      return;
+    }
+    const targetLangSelect = document.getElementById('setting-target-lang') as HTMLSelectElement | null;
+    const targetLang = targetLangSelect?.value ?? 'bn';
+    const btn = document.getElementById('btn-translate-summary') as HTMLButtonElement | null;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '...';
+    }
+    try {
+      const res = await sendRuntimeMessage<string>({
+        type: 'TRANSLATE_TEXT',
+        payload: { text, targetLang },
+      });
+      if (res.success && res.data && output) {
+        output.textContent = res.data;
+        notification.show('Summary translated!');
+      } else {
+        notification.show(res.error ?? 'Translation failed');
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Translate';
+      }
+    }
+  });
+
+  document.getElementById('btn-read-summary')?.addEventListener('click', () => {
+    const output = document.getElementById('summary-output');
+    const text = output?.textContent?.trim() ?? '';
+    if (!text || output?.querySelector('.placeholder')) {
+      notification.show('Generate a summary first');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const speedInput = document.getElementById('setting-speed') as HTMLInputElement | null;
+    const pitchInput = document.getElementById('setting-pitch') as HTMLInputElement | null;
+    utterance.rate = Number(speedInput?.value ?? 1.0);
+    utterance.pitch = Number(pitchInput?.value ?? 1.0);
+    window.speechSynthesis.speak(utterance);
+    notification.show('Reading summary aloud');
+  });
+
+  // Search & page filters
   document.getElementById('notes-search')?.addEventListener('input', () => {
     void loadNotes();
   });
+  document.getElementById('notes-page-only')?.addEventListener('change', () => {
+    void loadNotes();
+  });
   document.getElementById('highlights-search')?.addEventListener('input', () => {
+    void loadHighlights();
+  });
+  document.getElementById('highlights-color-filter')?.addEventListener('change', () => {
+    void loadHighlights();
+  });
+  document.getElementById('highlights-page-only')?.addEventListener('change', () => {
     void loadHighlights();
   });
 
@@ -559,8 +761,14 @@ export function initializeSidePanel(): void {
   document.getElementById('btn-save-note')?.addEventListener('click', async () => {
     const saveBtn = document.getElementById('btn-save-note') as HTMLButtonElement | null;
     const noteInput = document.getElementById('note-input') as HTMLTextAreaElement | null;
+    const tagsInput = document.getElementById('note-tags-input') as HTMLInputElement | null;
     const text = noteInput?.value.trim() ?? '';
     if (!text) return;
+
+    const tags = (tagsInput?.value ?? '')
+      .split(',')
+      .map((t) => t.trim().replace(/^#/, '').toLowerCase())
+      .filter(Boolean);
 
     if (saveBtn) {
       saveBtn.disabled = true;
@@ -574,10 +782,12 @@ export function initializeSidePanel(): void {
           text,
           pageUrl: tab?.url ?? '',
           pageTitle: tab?.title ?? 'Untitled Page',
+          tags,
         },
       });
       if (res.success) {
         if (noteInput) noteInput.value = '';
+        if (tagsInput) tagsInput.value = '';
         notification.show('Note saved!');
         await loadNotes();
       } else {
@@ -634,6 +844,58 @@ export function initializeSidePanel(): void {
   });
   document.getElementById('btn-export-md')?.addEventListener('click', () => {
     void exportNotes('md', 'btn-export-md');
+  });
+
+  // Backup & Restore JSON
+  document.getElementById('btn-backup-json')?.addEventListener('click', async () => {
+    const [notesRes, hlRes] = await Promise.all([
+      sendRuntimeMessage<Note[]>({ type: 'GET_NOTES' }),
+      sendRuntimeMessage<Highlight[]>({ type: 'GET_HIGHLIGHTS' }),
+    ]);
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      notes: notesRes.data ?? [],
+      highlights: hlRes.data ?? [],
+    };
+    exporter.downloadFile(
+      JSON.stringify(payload, null, 2),
+      `readnote-backup-${new Date().toISOString().slice(0, 10)}.json`,
+      'application/json'
+    );
+    notification.show('Backup exported!');
+  });
+
+  const restoreInput = document.getElementById('input-restore-json') as HTMLInputElement | null;
+  document.getElementById('btn-restore-json')?.addEventListener('click', () => {
+    restoreInput?.click();
+  });
+  restoreInput?.addEventListener('change', async () => {
+    const file = restoreInput.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text()) as {
+        notes?: unknown[];
+        highlights?: unknown[];
+      };
+      const res = await sendRuntimeMessage<{ notesImported: number; highlightsImported: number }>({
+        type: 'IMPORT_DATA',
+        payload: {
+          notes: Array.isArray(parsed.notes) ? parsed.notes : [],
+          highlights: Array.isArray(parsed.highlights) ? parsed.highlights : [],
+        },
+      });
+      if (res.success && res.data) {
+        notification.show(
+          `Imported ${res.data.notesImported} notes & ${res.data.highlightsImported} highlights`
+        );
+      } else {
+        notification.show(res.error ?? 'Import failed');
+      }
+    } catch {
+      notification.show('Invalid JSON backup file');
+    } finally {
+      restoreInput.value = '';
+    }
   });
 
   // Voice recording (MediaRecorder + optional SpeechRecognition transcription)

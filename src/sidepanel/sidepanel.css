@@ -118,6 +118,42 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-row .search-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-select {
+  width: auto;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.toggle-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.toggle-chip input {
+  accent-color: var(--primary);
+}
+
 .nav-icon {
   display: inline-flex;
   align-items: center;
@@ -365,6 +401,48 @@ body {
   color: var(--danger);
   background: #fff1f2;
 }
+
+.btn-edit {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+.btn-edit:hover {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.card-actions,
+.note-edit-actions,
+.note-tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.note-tags {
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.note-tag {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.note-editor { margin-top: 0; }
+.note-tag-input { margin-top: 8px; }
+.note-edit-actions { justify-content: flex-end; margin-top: 8px; }
 
 /* Composer & Recording */
 .composer-card {

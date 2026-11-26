@@ -20,9 +20,19 @@
         <div class="section-header">
           <h2>Summary</h2>
           <div class="export-actions">
+            <button class="btn-mini" id="btn-translate-summary" type="button" title="Translate summary">Translate</button>
+            <button class="btn-mini" id="btn-read-summary" type="button" title="Read summary aloud">Listen</button>
             <button class="btn-mini" id="btn-copy-summary" type="button" title="Copy summary">Copy</button>
-            <button class="btn-mini" id="btn-save-summary-note" type="button" title="Save summary as note">Save Note</button>
+            <button class="btn-mini" id="btn-save-summary-note" type="button" title="Save summary as note">Save</button>
           </div>
+        </div>
+        <div class="filter-row">
+          <select id="summary-style" class="setting-select compact-select" aria-label="Summary style">
+            <option value="bullets">Key Points</option>
+            <option value="brief">Brief TL;DR</option>
+            <option value="detailed">Detailed</option>
+            <option value="study">Study Notes</option>
+          </select>
         </div>
         <textarea
           class="note-input summary-custom-input"
@@ -46,7 +56,13 @@
             <button class="btn-mini" id="btn-export-md" type="button" title="Export notes as Markdown">MD</button>
           </div>
         </div>
-        <input id="notes-search" class="search-input" type="search" placeholder="Search notes…" />
+        <div class="filter-row">
+          <input id="notes-search" class="search-input" type="search" placeholder="Search notes or #tags…" />
+          <label class="toggle-chip" title="Show notes from current page only">
+            <input id="notes-page-only" type="checkbox" />
+            <span>This page</span>
+          </label>
+        </div>
         <div class="notes-list" id="notes-list"></div>
         <div class="composer-card">
           <textarea
@@ -55,6 +71,12 @@
             placeholder="Write a note or record your voice…"
             rows="3"
           ></textarea>
+          <input
+            id="note-tags-input"
+            class="search-input note-tag-input"
+            type="text"
+            placeholder="Tags (comma-separated, e.g. study, todo)"
+          />
           <div class="recording-bar hidden" id="recording-bar">
             <span class="rec-dot"></span>
             <span id="recording-timer">Recording 00:00</span>
@@ -72,7 +94,21 @@
         <div class="section-header">
           <h2>Highlights</h2>
         </div>
-        <input id="highlights-search" class="search-input" type="search" placeholder="Search highlights…" />
+        <div class="filter-row">
+          <input id="highlights-search" class="search-input" type="search" placeholder="Search highlights…" />
+          <select id="highlights-color-filter" class="setting-select compact-select" aria-label="Filter by color">
+            <option value="">All Colors</option>
+            <option value="#fef08a">Yellow</option>
+            <option value="#bbf7d0">Green</option>
+            <option value="#bfdbfe">Blue</option>
+            <option value="#fbcfe8">Pink</option>
+            <option value="#ddd6fe">Purple</option>
+          </select>
+          <label class="toggle-chip" title="Show highlights from current page only">
+            <input id="highlights-page-only" type="checkbox" />
+            <span>Page</span>
+          </label>
+        </div>
         <div class="highlights-list" id="highlights-list">
           <p class="placeholder">Select text on any page and choose a highlight color.</p>
         </div>
@@ -82,6 +118,7 @@
       <section id="view-quiz" class="view hidden" role="tabpanel" aria-label="Quiz">
         <div class="section-header">
           <h2>Quiz</h2>
+          <span id="quiz-score-banner" class="version-pill hidden">Score: 0 / 0</span>
         </div>
         <div class="quiz-container" id="quiz-container">
           <p class="placeholder">Generate a quiz from your selected text or the current page.</p>
@@ -139,6 +176,15 @@
           <div class="settings-actions">
             <button class="btn-secondary" id="btn-test-voice" type="button">Test Voice</button>
             <button class="btn-primary" id="btn-save-settings" type="button">Save Settings</button>
+          </div>
+
+          <div class="setting-group">
+            <label>Backup &amp; Restore</label>
+            <div class="settings-actions">
+              <button class="btn-secondary" id="btn-backup-json" type="button">Export JSON</button>
+              <button class="btn-secondary" id="btn-restore-json" type="button">Import JSON</button>
+              <input id="input-restore-json" type="file" accept="application/json,.json" class="hidden" />
+            </div>
           </div>
         </div>
       </section>

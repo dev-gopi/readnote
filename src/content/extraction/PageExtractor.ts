@@ -14,12 +14,16 @@ export class PageExtractor {
 
   extract(): ExtractedPage {
     const articleEl = this.detector.detect();
-    const rawText = articleEl ? articleEl.innerText : document.body.innerText;
+    const rawText = articleEl?.innerText || document.body?.innerText || '';
+    const cleanedText = this.cleaner.clean(rawText);
+    const stats = this.cleaner.getStats(cleanedText);
     return {
-      title: document.title,
+      title: this.cleaner.clean(document.title),
       url: window.location.href,
-      text: this.cleaner.clean(rawText),
+      text: cleanedText,
       html: articleEl ? articleEl.innerHTML : '',
+      wordCount: stats.wordCount,
+      readingTimeMinutes: stats.readingTimeMinutes,
     };
   }
 }

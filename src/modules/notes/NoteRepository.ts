@@ -1,28 +1,25 @@
 import type { Note, NoteUpdates } from '../../shared/types';
 import { StorageKeys } from '../../shared/constants/StorageKeys';
+import { LocalStorage } from '../../storage/LocalStorage';
 
 // Persistence layer for notes (chrome.storage.local)
 export class NoteRepository {
   private readonly key = StorageKeys.NOTES;
+  private readonly storage = new LocalStorage();
 
   private async _getAll(): Promise<Note[]> {
-    return new Promise((resolve) => {
-      chrome.storage.local.get([this.key], (result) => {
-        resolve((result[this.key] as Note[] | undefined) ?? []);
-      });
-    });
+    return (await this.storage.get<Note[]>(this.key)) ?? [];
   }
 
-  private async _setAll(notes: Note[]): Promise<void> {
-    return new Promise((resolve) => {
-      chrome.storage.local.set({ [this.key]: notes }, resolve);
+  private async _updateAll(updater: (notes: Note[]) => Note[]): Promise<Note[]> {
+    return this.storage.update<Note[]>(this.key, (notes) => {
+      // Never mutate a value received from chrome.storage in place.
+      return updater([...(notes ?? [])]);
     });
   }
 
   async save(note: Note): Promise<Note> {
-    const notes = await this._getAll();
-    notes.unshift(note);
-    await this._setAll(notes);
+    await this._updateAll((notes) => [note, ...notes.filter((item) => item.id !== note.id)]);
     return note;
   }
 
@@ -36,24 +33,18 @@ export class NoteRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const notes = await this._getAll();
-    await this._setAll(notes.filter((n) => n.id !== id));
+    await this._updateAll((notes) => notes.filter((note) => note.id !== id));
   }
 
   async update(id: string, updates: NoteUpdates): Promise<Note | null> {
-    const notes = await this._getAll();
-    const idx = notes.findIndex((n) => n.id === id);
-    const existing = notes[idx];
-    if (idx !== -1 && existing) {
-      const updated: Note = {
-        ...existing,
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-      notes[idx] = updated;
-      await this._setAll(notes);
-      return updated;
-    }
-    return null;
+    let updated: Note | null = null;
+    await this._updateAll((notes) =>
+      notes.map((existing) => {
+        if (existing.id !== id) return existing;
+        updated = { ...existing, ...updates, updatedAt: new Date().toISOString() };
+        return updated;
+      })
+    );
+    return updated;
   }
 }
